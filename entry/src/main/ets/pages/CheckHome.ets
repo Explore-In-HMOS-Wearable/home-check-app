@@ -1,7 +1,11 @@
 import dbUtils, { ItemRow } from '../common/utils/DBUtils';
 import commonUtils from '../common/utils/CommonUtils';
-import { router } from '@kit.ArkUI';
 import { CommonConstants } from '../common/constants/CommonConstants';
+
+@Builder
+export function CheckHomeBuilder(name?: string, param?: Object) {
+  CheckHome();
+}
 
 interface PageItem {
   cat: string;
@@ -52,9 +56,9 @@ struct ItemCardView {
   }
 }
 
-@Entry
 @Component
 export struct CheckHome {
+  private stack!: NavPathStack;
   private static readonly HOLD_MS: number = 5000;
   private static readonly TIMEOUT_MS: number = 5000;
   private readonly watchSize: string = '466px';
@@ -342,79 +346,71 @@ export struct CheckHome {
   }
 
   build(): void {
-    Stack() {
-      Column() {}
-      .justifyContent(FlexAlign.Center)
-      .width(this.watchSize)
-      .height(this.watchSize)
-      .clip(Circle({ width: '100%', height: '100%' }))
-      .backgroundColor(this.isCurCritical() ? '#DD0303' : '#FFFFFF')
+    NavDestination() {
+      Stack() {
+        Column() {}
+        .justifyContent(FlexAlign.Center)
+        .width(this.watchSize)
+        .height(this.watchSize)
+        .clip(Circle({ width: '100%', height: '100%' }))
+        .backgroundColor(this.isCurCritical() ? '#DD0303' : '#FFFFFF')
 
-      Column() {
-        Progress({ value: this.holdProgress, total: 100, type: ProgressType.Ring })
-          .width('99%')
-          .style({ strokeWidth: 12, shadow: true })
-          .color(new LinearGradient([
-            { color: 0xFFEAB308, offset: 0.0 },
-            { color: 0xFFF59E0B, offset: 1.0 }
-          ]))
-      }
-      .width(this.watchSize)
-      .height(this.watchSize)
-      .alignItems(HorizontalAlign.Center)
-      .justifyContent(FlexAlign.Center)
-      .visibility(this.holding ? Visibility.Visible : Visibility.Hidden)
+        Column() {
+          Progress({ value: this.holdProgress, total: 100, type: ProgressType.Ring })
+            .width('99%')
+            .style({ strokeWidth: 12, shadow: true })
+            .color(new LinearGradient([
+              { color: 0xFFEAB308, offset: 0.0 },
+              { color: 0xFFF59E0B, offset: 1.0 }
+            ]))
+        }
+        .width(this.watchSize)
+        .height(this.watchSize)
+        .alignItems(HorizontalAlign.Center)
+        .justifyContent(FlexAlign.Center)
+        .visibility(this.holding ? Visibility.Visible : Visibility.Hidden)
 
-      Column() {
-        if (this.loading) {
-          this.LoadingCard()
-        } else if (!this.getCur()) {
-          this.DoneCard()
-        } else {
-          Column() {
-            ItemCardView({
-              cat: this.getCur()!.cat,
-              it: this.getCur()!.item,
-              isCritical: this.isCurCritical()
+        Column() {
+          if (this.loading) {
+            this.LoadingCard()
+          } else if (!this.getCur()) {
+            this.DoneCard()
+          } else {
+            Column() {
+              ItemCardView({
+                cat: this.getCur()!.cat,
+                it: this.getCur()!.item,
+                isCritical: this.isCurCritical()
+              })
+            }
+            .onTouch((event: TouchEvent) => {
+              const cur = this.getCur();
+              if (!cur) {
+                this.dbg('onTouch ignored: no current item (pages empty)');
+                return;
+              }
+              if (event.type === TouchType.Down) this.startHold();
+              else if (event.type === TouchType.Up) this.cancelHold();
+              else if (event.type === TouchType.Cancel) this.cancelHold();
             })
           }
-          .onTouch((event: TouchEvent) => {
-            const cur = this.getCur();
-            const curName = cur?.item?.name ?? '';
-
-            if (!cur) {
-              this.dbg('onTouch ignored: no current item (pages empty)');
-              return;
-            }
-
-            if (event.type === TouchType.Down) {
-              this.dbg('onTouch DOWN (item=', curName, ')');
-              this.startHold();
-            } else if (event.type === TouchType.Up) {
-              this.dbg('onTouch UP (item=', curName, ')');
-              this.cancelHold();
-            } else if (event.type === TouchType.Cancel) {
-              this.dbg('onTouch CANCEL (item=', curName, ')');
-              this.cancelHold();
-            }
-          })
-
-
-
         }
+        .width('100%')
+        .height('100%')
+        .alignItems(HorizontalAlign.Center)
+        .justifyContent(FlexAlign.Center)
       }
-      .width('100%')
-      .height('100%')
-      .alignItems(HorizontalAlign.Center)
-      .justifyContent(FlexAlign.Center)
+      .align(Alignment.Center)
+      .width(this.watchSize)
+      .height(this.watchSize)
+      .border({ color: Color.Black, width: 1 })
+      .borderRadius(this.watchSize)
     }
-    .align(Alignment.Center)
-    .width(this.watchSize)
-    .height(this.watchSize)
-    .border({ color: Color.Black, width: 1 })
-    .borderRadius(this.watchSize)
+    .hideTitleBar(true)
+    .onReady((ctx: NavDestinationContext) => {
+      this.stack = ctx.pathStack;
+    })
   }
-
   private getCur(): PageItem | undefined {
     if (this.pages.length === 0) {
       return undefined;
@@ -443,7 +439,7 @@ export struct CheckHome {
         .backgroundColor('#2563EB')
         .fontColor(Color.White)
         .onClick((): void => {
-          router.pushUrl({ url: 'pages/Index' });
+          this.stack.pop({ created: true });
         })
     }
     .alignItems(HorizontalAlign.Center)
@@ -454,6 +450,8 @@ export struct CheckHome {
     .borderRadius(16)
     .shadow({ radius: 8, color: '#11000000', offsetX: 0, offsetY: 2 })
   }
+
+
 
   @Builder
   private LoadingCard(): void {

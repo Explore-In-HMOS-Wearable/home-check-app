@@ -1,8 +1,5 @@
 {
   "src": [
-    "pages/Index",
-    "pages/AddItemPage",
-    "pages/MyItemsPage",
-    "pages/CheckHome"
+    "pages/Index"
   ]
 }

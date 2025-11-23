@@ -1,4 +1,3 @@
-import { router } from '@kit.ArkUI';
 import {
   LengthMetrics, LengthUnit,
   ArcButton, ArcButtonOptions, ArcButtonStatus, ArcButtonStyleMode, ArcButtonPosition
@@ -6,13 +5,16 @@ import {
 
 @Component
 export struct ArcButtonComponent {
+  @Consume('navStack') navStack: NavPathStack;   // 🔥 parent’tan stack al
   @Prop label: string = 'Button';
   @Prop arcPosition?: ArcButtonPosition;
   @Prop styleMode: ArcButtonStyleMode = ArcButtonStyleMode.EMPHASIZED_LIGHT;
   @Prop status: ArcButtonStatus = ArcButtonStatus.NORMAL;
   @Prop fontSize: number = 15;
   @Prop shadowEnabled: boolean = true;
-  @Prop routeUrl?: string;
+
+  // 🔁 router yerine sayfa adı
+  @Prop routeName?: string;
 
   build() {
     ArcButton({
@@ -24,8 +26,8 @@ export struct ArcButtonComponent {
         fontSize: new LengthMetrics(this.fontSize, LengthUnit.FP),
         shadowEnabled: this.shadowEnabled,
         onClick: () => {
-          if (this.routeUrl && this.routeUrl.length > 0) {
-            router.pushUrl({ url: this.routeUrl });
+          if (this.routeName && this.routeName.length > 0) {
+            this.navStack.pushPathByName(this.routeName, null);
           }
         }
       })

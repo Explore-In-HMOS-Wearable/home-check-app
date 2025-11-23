@@ -1,0 +1,24 @@
+{
+  "routerMap": [
+    {
+      "name": "IndexHome",
+      "pageSourceFile": "src/main/ets/pages/Index.ets",
+      "buildFunction": "IndexHomeBuilder"
+    },
+    {
+      "name": "AddItemPage",
+      "pageSourceFile": "src/main/ets/pages/AddItemPage.ets",
+      "buildFunction": "AddItemPageBuilder"
+    },
+    {
+      "name": "MyItemsPage",
+      "pageSourceFile": "src/main/ets/pages/MyItemsPage.ets",
+      "buildFunction": "MyItemsPageBuilder"
+    },
+    {
+      "name": "CheckHome",
+      "pageSourceFile": "src/main/ets/pages/CheckHome.ets",
+      "buildFunction": "CheckHomeBuilder"
+    }
+  ]
+}

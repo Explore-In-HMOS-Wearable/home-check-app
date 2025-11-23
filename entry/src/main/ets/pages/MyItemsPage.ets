@@ -3,6 +3,12 @@ import commonUtils from '../common/utils/CommonUtils';
 import { ArcList, ArcListItem, ArcListAttribute, ArcListItemAttribute, ComponentContent,
   LengthMetrics } from '@kit.ArkUI';
 
+
+@Builder
+export function MyItemsPageBuilder(name?: string, param?: Object) {
+  MyItemsPage();
+}
+
 interface EditItemData {
   name: string;
   category: string;
@@ -25,19 +31,24 @@ struct EditItemDialog {
 
   build(): void {
     Column() {
-
       Scroll() {
         Column() {
-
           Column({ space: 6 }) {
-            Row() { Text('Name *').fontSize(14).fontColor('#111827') }
+            Row() {
+              Text('Name *').fontSize(14).fontColor('#111827')
+            }
             TextInput({ text: this.name, placeholder: 'e.g., Windows, Iron…' })
-              .height(40).maxLines(1).fontColor(Color.Black)
-              .onChange((v: string): void => { this.name = v; this.touched = true; })
+              .height(40)
+              .maxLines(1)
+              .fontColor(Color.Black)
+              .onChange((v: string): void => {
+                this.name = v;
+                this.touched = true;
+              })
               .border({
                 width: 1,
-                color: (this.touched && (this.name.trim().length === 0)) ? '#EF4444' :
-                  (this.name.trim().length > 0 ? '#10B981' : '#E5E7EB')
+                color: (this.touched && (this.name.trim().length === 0)) ? '#EF4444'
+                  : (this.name.trim().length > 0 ? '#10B981' : '#E5E7EB')
               })
               .borderRadius(10)
               .padding({ left: 10, right: 10 })
@@ -49,7 +60,9 @@ struct EditItemDialog {
           Column({ space: 6 }) {
             Text('Category').fontSize(14).fontColor('#111827')
             TextInput({ text: this.category, placeholder: 'Optional (e.g., Kitchen)' })
-              .height(40).maxLines(1).fontColor(Color.Black)
+              .height(40)
+              .maxLines(1)
+              .fontColor(Color.Black)
               .onChange((v: string): void => { this.category = v; })
               .border({ width: 1, color: '#E5E7EB' })
               .borderRadius(10)
@@ -59,7 +72,9 @@ struct EditItemDialog {
           Column({ space: 6 }) {
             Text('Note').fontSize(14).fontColor('#111827')
             TextInput({ text: this.note, placeholder: 'Optional note' })
-              .height(96).maxLines(4).fontColor(Color.Black)
+              .height(96)
+              .maxLines(4)
+              .fontColor(Color.Black)
               .onChange((v: string): void => { this.note = v; })
               .border({ width: 1, color: '#E5E7EB' })
               .borderRadius(10)
@@ -88,7 +103,10 @@ struct EditItemDialog {
           .type(ButtonType.Capsule)
           .backgroundColor('#F3F4F6')
           .fontColor('#111827')
-          .onClick((): void => { this.cancel(); this.controller?.close(); })
+          .onClick((): void => {
+            this.cancel();
+            this.controller?.close();
+          })
 
         Button('Save')
           .type(ButtonType.Capsule)
@@ -97,7 +115,10 @@ struct EditItemDialog {
           .enabled(this.name.trim().length > 0)
           .onClick((): void => {
             const trimmed: string = (this.name ?? '').trim();
-            if (trimmed.length === 0) { this.touched = true; return; }
+            if (!trimmed) {
+              this.touched = true;
+              return;
+            }
             this.confirm({
               name: trimmed,
               category: (this.category ?? '').trim(),
@@ -119,6 +140,7 @@ struct EditItemDialog {
 
 
 
+
 @Builder
 function myItemsHeader(): void {
   Column() {
@@ -132,6 +154,7 @@ function myItemsHeader(): void {
 @Entry
 @Component
 export struct MyItemsPage {
+  private stack: NavPathStack | null = null;
   @State items: ItemRow[] = [];
   @State loading: boolean = false;
   @State onlyCritical: boolean = false;
@@ -174,7 +197,7 @@ export struct MyItemsPage {
       this.items = fresh;
     } catch (e) {
       const msg: string = e instanceof Error ? e.message : String(e);
-      console.error('[MyItemsPage.loadItems] ' + msg);
+      console.error(`[MyItemsPage.loadItems] ${msg}`);
       commonUtils.showToast('Load error');
     } finally {
       this.loading = false;
@@ -462,6 +485,8 @@ export struct MyItemsPage {
   }
 
   build(): void {
+    NavDestination(){
+
     Stack() {
       Column() { }
       .justifyContent(FlexAlign.Center)
@@ -511,5 +536,10 @@ export struct MyItemsPage {
     .border({ color: Color.Black, width: 1 })
     .borderRadius(this.watchSize)
     .backgroundColor('#F5F6F8')
+    }
+    .hideTitleBar(true)
+    .onReady((ctx: NavDestinationContext) => {
+      this.stack = ctx.pathStack;
+    })
   }
 }
